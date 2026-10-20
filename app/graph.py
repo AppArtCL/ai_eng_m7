@@ -1,7 +1,9 @@
+from contextlib import asynccontextmanager
 from langgraph.checkpoint.base import BaseCheckpointSaver
+from langgraph.checkpoint.redis.aio import AsyncRedisSaver
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
-from typing import Literal
+from typing import AsyncIterator, Callable, Literal
 import logging
 
 from app import config
@@ -22,13 +24,33 @@ def enrutar(state: AgentState) -> Literal["investigador", "analista", "sintesis"
     return "sintesis"
 
 
-def construir_grafo(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
-    """Arma el orquestador y lo compila con el checkpointer recibido (Redis en la API)."""
+@asynccontextmanager
+async def checkpointer_redis(url: str = config.REDIS_URL) -> AsyncIterator[AsyncRedisSaver]:
+    """Abre el checkpointer de Redis y crea sus índices (requiere RedisJSON y RediSearch)."""
+    ttl = {"default_ttl": config.CHECKPOINT_TTL_MIN, "refresh_on_read": True}
+    async with AsyncRedisSaver.from_conn_string(url, ttl=ttl) as saver:
+        await saver.asetup()
+        yield saver
+
+
+def construir_grafo(
+    checkpointer: BaseCheckpointSaver | None = None,
+    nodos: dict[str, Callable] | None = None,
+) -> CompiledStateGraph:
+    """Arma el orquestador y lo compila con el checkpointer recibido (Redis en la API).
+
+    `nodos` reemplaza nodos por nombre; los tests lo usan para no llamar al LLM.
+    """
+    implementaciones = {
+        "investigador": nodo_investigador,
+        "analista": nodo_analista,
+        "sintesis": nodo_sintesis,
+        "supervisor": nodo_supervisor,
+        **(nodos or {}),
+    }
     grafo = StateGraph(AgentState)
-    grafo.add_node("investigador", nodo_investigador)
-    grafo.add_node("analista", nodo_analista)
-    grafo.add_node("sintesis", nodo_sintesis)
-    grafo.add_node("supervisor", nodo_supervisor)
+    for nombre, funcion in implementaciones.items():
+        grafo.add_node(nombre, funcion)
     grafo.add_edge(START, "supervisor")
     grafo.add_conditional_edges("supervisor", enrutar)
     grafo.add_edge("investigador", "supervisor")

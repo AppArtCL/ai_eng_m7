@@ -45,6 +45,11 @@ PINECONE_NAMESPACE = "consultas-convivencia"
 EMBEDDING_MODEL = "text-embedding-3-small"
 MAX_PASOS = 6
 
+# Redis: estado de los jobs, cola de tareas y checkpoints de LangGraph.
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+NUM_WORKERS = 5
+CHECKPOINT_TTL_MIN = 1440  # los checkpoints de un hilo expiran a las 24 h sin uso
+
 def get_embeddings():
     validar_credenciales()
     assert OPENAI_API_KEY is not None
