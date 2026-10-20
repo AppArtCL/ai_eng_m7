@@ -132,3 +132,9 @@ async def test_redis_caido_responde_503(cliente_sin_redis):
     assert (await cliente_sin_redis.post("/tasks", json={"pregunta": "hola"})).status_code == 503
     assert (await cliente_sin_redis.get("/tasks/abc")).status_code == 503
     assert (await cliente_sin_redis.get("/health")).status_code == 503
+
+
+def test_fastapi_no_traza_peticiones_http():
+    """FastAPI >=0.150 traza cada petición por defecto; el polling de GET /tasks inflaría
+    el conteo de trazas y falsearía la latencia p95 de las ejecuciones en Phoenix."""
+    assert crear_app()._telemetry["tracing"] is False

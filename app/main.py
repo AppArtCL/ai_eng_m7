@@ -19,6 +19,7 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 
 from app import config, jobs
 from app.graph import checkpointer_redis, construir_grafo
+from app.observability import cerrar_trazas, configurar_trazas
 from app.worker import bucle_worker
 
 logger = logging.getLogger(__name__)
@@ -58,9 +59,10 @@ def configurar_logging() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Abre Redis y el checkpointer, compila el grafo y lanza los workers; al cerrar, los detiene."""
+    """Activa las trazas, abre Redis y el checkpointer, compila el grafo y lanza los workers."""
     configurar_logging()
     config.validar_credenciales()
+    proveedor_trazas = configurar_trazas()
     app.state.redis = Redis.from_url(config.REDIS_URL, decode_responses=True)
     async with checkpointer_redis(config.REDIS_URL) as saver:
         grafo = construir_grafo(saver)
@@ -76,6 +78,7 @@ async def lifespan(app: FastAPI):
                 tarea.cancel()
             await asyncio.gather(*workers, return_exceptions=True)
             await app.state.redis.aclose()
+            cerrar_trazas(proveedor_trazas)
 
 
 def _redis(request: Request) -> Redis:
@@ -87,6 +90,8 @@ def crear_app() -> FastAPI:
         title="Orquestador Edificio Riesco 6540",
         description="Preguntas sobre el reglamento resueltas por un equipo de agentes, con aprobación humana para acciones.",
         lifespan=lifespan,
+        # Solo se trazan las ejecuciones del agente (worker), no cada petición HTTP del polling.
+        telemetry={"tracing": False},
     )
 
     @app.exception_handler(RedisConnectionError)

@@ -22,6 +22,8 @@ dependencies = [
     "redis==8.1.0",
     "fastapi==0.150.0",
     "uvicorn[standard]==0.54.0",
+    "arize-phoenix-otel==0.17.2",
+    "openinference-instrumentation-langchain==0.1.79",
 ]
 
 [dependency-groups]

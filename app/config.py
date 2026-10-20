@@ -50,6 +50,10 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 NUM_WORKERS = 5
 CHECKPOINT_TTL_MIN = 1440  # los checkpoints de un hilo expiran a las 24 h sin uso
 
+# Observabilidad: trazas OpenInference hacia Arize Phoenix. Vacío desactiva el envío.
+PHOENIX_COLLECTOR_ENDPOINT = os.getenv("PHOENIX_COLLECTOR_ENDPOINT", "http://localhost:6006/v1/traces")
+PHOENIX_PROJECT = os.getenv("PHOENIX_PROJECT", "riesco-api")
+
 def get_embeddings():
     validar_credenciales()
     assert OPENAI_API_KEY is not None
