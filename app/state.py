@@ -12,8 +12,8 @@ from langgraph.graph import MessagesState
 
 # Nombres de los nodos especialistas y decisiones posibles del supervisor.
 # Se definen una sola vez para reutilizarlos en el supervisor y en el grafo.
-Especialista = Literal["investigador", "analista"]
-Decision = Literal["investigador", "analista", "FINISH"]
+Especialista = Literal["investigador", "analista", "gestor"]
+Decision = Literal["investigador", "analista", "gestor", "FINISH"]
 
 
 class Contribucion(TypedDict):
@@ -38,6 +38,8 @@ class AgentState(MessagesState):
     pasos: Annotated[int, operator.add]
     # True cuando el supervisor decide FINISH (o se alcanza MAX_PASOS).
     task_completed: bool
+    # Última decisión humana sobre una acción crítica: {"aprobado": bool, "comentario": str}.
+    aprobacion: Optional[dict]
 
 
 def estado_inicial(pregunta: str) -> AgentState:
@@ -50,4 +52,5 @@ def estado_inicial(pregunta: str) -> AgentState:
         contribuciones=[],
         pasos=0,
         task_completed=False,
+        aprobacion=None,
     )

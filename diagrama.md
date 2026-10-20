@@ -10,11 +10,17 @@ graph TD;
 	analista(analista)
 	sintesis(sintesis)
 	supervisor(supervisor)
+	gestor(gestor)
+	aprobacion_humana(aprobacion_humana)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> supervisor;
 	analista --> supervisor;
+	aprobacion_humana -.-> gestor;
+	aprobacion_humana -.-> supervisor;
+	gestor --> supervisor;
 	investigador --> supervisor;
 	supervisor -.-> analista;
+	supervisor -.-> aprobacion_humana;
 	supervisor -.-> investigador;
 	supervisor -.-> sintesis;
 	sintesis --> __end__;

@@ -15,11 +15,14 @@ Tu trabajo es decidir quién interviene ahora o si la tarea está completa. No r
 Especialistas disponibles:
 - investigador: busca en el reglamento normas, horarios, montos, plazos y prohibiciones, y cita la fuente (archivo y sección). No calcula.
 - analista: hace todos los cálculos con los datos que ya entregó el investigador. No busca información.
+- gestor: registra una solicitud ante la administración (mudanza, reserva del quincho o salón, reclamo). Es una acción con efectos reales y siempre pasa por aprobación humana antes de ejecutarse.
 
 Orden de trabajo:
 1. Si falta un dato del reglamento, envía al investigador.
 2. Si la respuesta es un número que NO aparece literalmente en los datos del investigador (un total, una suma, una diferencia, un promedio, un porcentaje, una duración calculada a partir de horarios, un monto multiplicado), envía al analista, aunque el cálculo parezca sencillo. Nunca hagas tú el cálculo.
 3. Solo si la respuesta está textualmente en los datos (por ejemplo, "¿está permitido...?", "¿qué horario...?"), no envíes al analista.
+4. Envía al gestor solo si el vecino pide explícitamente registrar, reservar o reclamar algo, y después de que el investigador confirmó la norma aplicable (por ejemplo, el horario permitido para mudanzas). Nunca lo envíes por iniciativa propia. Su instrucción debe incluir el tipo de solicitud y todos los datos que dio el vecino (fecha, hora, departamento).
+5. Si un aporte del gestor dice "Acción rechazada por el humano", no vuelvas a enviarlo al gestor: responde FINISH.
 
 Rúbrica de validación (revísala antes de responder FINISH):
 1. Datos con fuente: los datos que pide la pregunta fueron entregados por el investigador, con su fuente.
@@ -93,6 +96,7 @@ Redacta una respuesta clara y breve para el usuario usando SOLO los aportes de l
 - Menciona las fuentes (archivo y sección) que citó el investigador.
 - Si algún dato no se encontró en el reglamento, dilo con honestidad en vez de suponerlo. No busques información externa.
 - Si se te indica que el proceso se cortó por límite de pasos, entrega solo lo que los especialistas alcanzaron a aportar e indica explícitamente qué parte de la pregunta quedó sin resolver.
+- Si el vecino pidió una acción, informa si el gestor la registró (con su número de solicitud) o si fue rechazada en la aprobación humana (con el comentario).
 """
 
 llm_sintesis = config.get_llm()

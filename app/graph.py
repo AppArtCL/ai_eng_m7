@@ -12,12 +12,20 @@ from app.agents.supervisor import nodo_supervisor
 from app.agents.supervisor import nodo_sintesis
 from app.agents.analyst_agent import nodo_analista
 from app.agents.research_agent import nodo_investigador
+from app.agents.gestor_agent import nodo_gestor
+from app.hitl import es_critica, nodo_aprobacion_humana
 
 logger = logging.getLogger(__name__)
 
 
-def enrutar(state: AgentState) -> Literal["investigador", "analista", "sintesis"]:
-    """Traduce la decisión del supervisor al nombre del próximo nodo."""
+def enrutar(state: AgentState) -> Literal["investigador", "analista", "aprobacion_humana", "sintesis"]:
+    """Traduce la decisión del supervisor al nombre del próximo nodo.
+
+    Antes de despachar, revisa si la decisión es crítica: en ese caso pasa primero por la aprobación humana.
+    El gestor no es un destino directo: solo se llega a él desde aprobacion_humana.
+    """
+    if es_critica(state):
+        return "aprobacion_humana"
     siguiente = state.get("next_agent")
     if siguiente in ("investigador", "analista"):
         return siguiente
@@ -46,6 +54,8 @@ def construir_grafo(
         "analista": nodo_analista,
         "sintesis": nodo_sintesis,
         "supervisor": nodo_supervisor,
+        "gestor": nodo_gestor,
+        "aprobacion_humana": nodo_aprobacion_humana,
         **(nodos or {}),
     }
     grafo = StateGraph(AgentState)
@@ -55,6 +65,8 @@ def construir_grafo(
     grafo.add_conditional_edges("supervisor", enrutar)
     grafo.add_edge("investigador", "supervisor")
     grafo.add_edge("analista", "supervisor")
+    grafo.add_edge("gestor", "supervisor")
+    # aprobacion_humana no tiene aristas fijas: devuelve Command(goto="gestor" | "supervisor").
     grafo.add_edge("sintesis", END)
     return grafo.compile(checkpointer=checkpointer)
 

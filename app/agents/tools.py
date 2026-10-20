@@ -1,8 +1,17 @@
 import ast
+import json
 import operator as op
+from datetime import datetime, timezone
 from functools import lru_cache
+from typing import Literal
+
+import redis
 from langchain_core.tools import tool
+
+from app import config
 from app.rag.rag_system import RAGSystem
+
+CLAVE_SOLICITUDES = "solicitudes:administracion"
 
 _OPERADORES = {
     ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul, ast.Div: op.truediv,
@@ -65,3 +74,25 @@ def calculadora(expresion: str) -> str:
     except (ValueError, SyntaxError) as e:
         return f"Error al calcular '{expresion}': {e}"
 
+
+@lru_cache(maxsize=1)
+def get_redis() -> redis.Redis:
+    """Cliente Redis síncrono: la herramienta corre dentro del thread del nodo, no en el event loop."""
+    return redis.Redis.from_url(config.REDIS_URL, decode_responses=True)
+
+
+@tool
+def registrar_solicitud(tipo: Literal["mudanza", "reserva", "reclamo"], detalle: str) -> str:
+    """Registra una solicitud formal ante la administración del Edificio Riesco 6540.
+
+    Tiene efectos reales: la solicitud queda en la bandeja de la administración.
+    Úsala solo para la acción que se te indicó, una sola vez.
+
+    tipo: "mudanza", "reserva" (quincho, salón multiuso) o "reclamo".
+    detalle: fecha, hora, departamento y todo lo necesario para gestionarla.
+
+    Ejemplo de entrada: tipo="mudanza", detalle="sábado 10:00 a 14:00, depto 101"
+    """
+    solicitud = {"tipo": tipo, "detalle": detalle, "creado_en": datetime.now(timezone.utc).isoformat()}
+    numero = get_redis().rpush(CLAVE_SOLICITUDES, json.dumps(solicitud, ensure_ascii=False))
+    return f"Solicitud de {tipo} registrada con el n.º {numero}: {detalle}"
