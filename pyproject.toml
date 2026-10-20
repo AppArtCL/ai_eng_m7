@@ -20,11 +20,14 @@ dependencies = [
     "pydantic==2.12.2",
     "langgraph-checkpoint-redis==0.5.2",
     "redis==8.1.0",
+    "fastapi==0.150.0",
+    "uvicorn[standard]==0.54.0",
 ]
 
 [dependency-groups]
 dev = [
     "fakeredis==2.40.0",
+    "httpx==0.28.1",
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
 ]
