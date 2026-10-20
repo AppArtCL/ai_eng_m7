@@ -7,6 +7,7 @@ se acumulan y los demás se reemplazan.
 import operator
 from typing import Annotated, List, Literal, Optional, TypedDict
 
+from langchain_core.messages import HumanMessage
 from langgraph.graph import MessagesState
 
 # Nombres de los nodos especialistas y decisiones posibles del supervisor.
@@ -37,3 +38,16 @@ class AgentState(MessagesState):
     pasos: Annotated[int, operator.add]
     # True cuando el supervisor decide FINISH (o se alcanza MAX_PASOS).
     task_completed: bool
+
+
+def estado_inicial(pregunta: str) -> AgentState:
+    """Construye el estado inicial con todos los campos de AgentState."""
+    return AgentState(
+        messages=[HumanMessage(content=pregunta)],
+        next_agent=None,
+        instruccion="",
+        razon="",
+        contribuciones=[],
+        pasos=0,
+        task_completed=False,
+    )

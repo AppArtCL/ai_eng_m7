@@ -2,7 +2,7 @@ import ast
 import operator as op
 from functools import lru_cache
 from langchain_core.tools import tool
-from rag_system import RAGSystem
+from app.rag.rag_system import RAGSystem
 
 _OPERADORES = {
     ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul, ast.Div: op.truediv,

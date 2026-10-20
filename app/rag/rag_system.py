@@ -40,9 +40,9 @@ Notas sobre la salida:
       por lo que "Humo y Ruido" sube al 1.er lugar; el chunk correcto queda 2.º.
 """
 import logging
-import config
-from ingest import cargar_chunks
-from retrievers import crear_bm25, crear_vectorial
+from app import config
+from app.rag.ingest import cargar_chunks
+from app.rag.retrievers import crear_bm25, crear_vectorial
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from langchain_classic.retrievers import EnsembleRetriever

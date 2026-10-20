@@ -1,6 +1,6 @@
 import os
 import logging
-import config
+from app import config
 import time
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter

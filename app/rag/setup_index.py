@@ -1,5 +1,5 @@
 from pinecone import Pinecone, ServerlessSpec
-import config
+from app import config
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

@@ -1,5 +1,5 @@
 import re
-import config
+from app import config
 import unicodedata
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever

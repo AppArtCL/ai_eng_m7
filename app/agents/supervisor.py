@@ -4,8 +4,8 @@ import re
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
-import config
-from state import AgentState, Decision
+from app import config
+from app.state import AgentState, Decision
 
 logger = logging.getLogger(__name__)
 

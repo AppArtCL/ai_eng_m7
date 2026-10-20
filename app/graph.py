@@ -1,13 +1,15 @@
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import CompiledStateGraph
 from typing import Literal
 import logging
 
-import config
-from state import AgentState
-from agents.supervisor import nodo_supervisor
-from agents.supervisor import nodo_sintesis
-from agents.analyst_agent import nodo_analista
-from agents.research_agent import nodo_investigador
+from app import config
+from app.state import AgentState
+from app.agents.supervisor import nodo_supervisor
+from app.agents.supervisor import nodo_sintesis
+from app.agents.analyst_agent import nodo_analista
+from app.agents.research_agent import nodo_investigador
 
 logger = logging.getLogger(__name__)
 
@@ -20,26 +22,28 @@ def enrutar(state: AgentState) -> Literal["investigador", "analista", "sintesis"
     return "sintesis"
 
 
-grafo = StateGraph(AgentState)
-grafo.add_node("investigador", nodo_investigador)
-grafo.add_node("analista", nodo_analista)
-grafo.add_node("sintesis", nodo_sintesis)
-grafo.add_node("supervisor", nodo_supervisor)
-grafo.add_edge(START, "supervisor")
-grafo.add_conditional_edges("supervisor", enrutar)
-grafo.add_edge("investigador", "supervisor")
-grafo.add_edge("analista", "supervisor")
-grafo.add_edge("sintesis", END)
-
-app = grafo.compile()
+def construir_grafo(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+    """Arma el orquestador y lo compila con el checkpointer recibido (Redis en la API)."""
+    grafo = StateGraph(AgentState)
+    grafo.add_node("investigador", nodo_investigador)
+    grafo.add_node("analista", nodo_analista)
+    grafo.add_node("sintesis", nodo_sintesis)
+    grafo.add_node("supervisor", nodo_supervisor)
+    grafo.add_edge(START, "supervisor")
+    grafo.add_conditional_edges("supervisor", enrutar)
+    grafo.add_edge("investigador", "supervisor")
+    grafo.add_edge("analista", "supervisor")
+    grafo.add_edge("sintesis", END)
+    return grafo.compile(checkpointer=checkpointer)
 
 
 def exportar_diagrama():
     """Exporta el diagrama del grafo a un archivo visualizable."""
+    dibujo = construir_grafo().get_graph()
     with open(config.BASE_DIR / "diagrama.md", "w", encoding="utf-8") as archivo:
-        archivo.write(f"```mermaid\n{app.get_graph().draw_mermaid()}```\n")
+        archivo.write(f"```mermaid\n{dibujo.draw_mermaid()}```\n")
     try:
-        app.get_graph().draw_mermaid_png(output_file_path=str(config.BASE_DIR / "diagrama.png"))
+        dibujo.draw_mermaid_png(output_file_path=str(config.BASE_DIR / "diagrama.png"))
     except Exception as e:
         logger.warning("No se pudo generar el PNG (requiere internet): %s", e)
 

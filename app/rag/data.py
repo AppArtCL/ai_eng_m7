@@ -1,5 +1,5 @@
 import logging
-import config
+from app import config
 
 logger = logging.getLogger(__name__)
 

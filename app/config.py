@@ -8,8 +8,8 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 logger = logging.getLogger(__name__)
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
+BASE_DIR = Path(__file__).resolve().parent.parent  # raíz del repo (.env, diagrama)
+DATA_DIR = BASE_DIR / "app" / "rag" / "data"
 
 dotenv.load_dotenv(BASE_DIR / ".env")
 OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")

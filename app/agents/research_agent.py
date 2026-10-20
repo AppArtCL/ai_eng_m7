@@ -1,9 +1,9 @@
 from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage
 
-import config
-from state import AgentState
-from agents.tools import buscar_en_reglamento
+from app import config
+from app.state import AgentState
+from app.agents.tools import buscar_en_reglamento
 
 PROMPT_INVESTIGADOR = """Eres el agente investigador del Reglamento de Copropiedad del Edificio Riesco 6540.
 Solo buscas información con tu herramienta; no haces cálculos ni inventas datos que no aparezcan en los resultados.
